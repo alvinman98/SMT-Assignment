@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_dh_cash_advance_root" name="Cash Advance" sequence="100" web_icon="smt_cash_advance,static/description/icon.png"/>  
+        <menuitem id="main_menu_dh_cash_advance" name="Advance" sequence="1" parent="menu_dh_cash_advance_root"/>  
+        <menuitem id="menu_dh_cash_advance_travel" name="Travel Advance" sequence="2" parent="main_menu_dh_cash_advance" action="account_cash_advance_travel_action"/>  
+        <menuitem id="menu_dh_cash_advance_other" name="Other Advance" sequence="2" parent="main_menu_dh_cash_advance" action="account_cash_advance_other_action"/>  
+        <menuitem id="main_menu_dh_cash_settlement" name="Settlement" sequence="1" parent="menu_dh_cash_advance_root"/>  
+        <menuitem id="menu_dh_cash_settlement_travel" name="Travel Settlement" sequence="2" parent="main_menu_dh_cash_settlement" action="cash_settlement_travel_list_action"/>  
+        <menuitem id="menu_dh_cash_settlement_other" name="Other Settlement" sequence="2" parent="main_menu_dh_cash_settlement" action="cash_settlement_other_list_action"/>
+    </data>
+</odoo>

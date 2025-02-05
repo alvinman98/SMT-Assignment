@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- account.cash.advance tree view -->
+        <record id="account_cash_advance_view_tree" model="ir.ui.view">
+            <field name="name">account.cash.advance.tree</field>
+            <field name="model">account.cash.advance</field>
+            <field name="arch" type="xml">
+                <tree string="Cash Advance" decoration-info="state == 'draft'" decoration-muted="state == 'done'">
+                    <field name="name"/>
+                    <field name="request_type"/>
+                    <field name="payment_type"/>
+                    <field name="date_request"/>
+                    <field name="employee_id"/>
+                    <field name="date_request_payment"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- account.cash.advance form view -->
+        <record id="account_cash_advance_view_form" model="ir.ui.view">
+            <field name="name">account.cash.advance.form</field>
+            <field name="model">account.cash.advance</field>
+            <field name="arch" type="xml">
+                <form string="Cash Advance">
+                    <header>
+                        <button name="action_confirm" groups="smt_cash_advance.group_user,smt_cash_advance.group_admin" string="Confirm" type="object" attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                        <button name="action_approve" groups="smt_cash_advance.group_manager,smt_cash_advance.group_admin" string="Approve" type="object" attrs="{'invisible': [('state', '!=', 'direct_approved')]}" class="oe_highlight"/>
+                        <button name="action_reject" groups="smt_cash_advance.group_manager,smt_cash_advance.group_admin" string="Reject" type="object" attrs="{'invisible': [('state', '!=', 'direct_approved')]}" />
+                        <button name="action_pay_advance" groups="smt_cash_advance.group_finance,smt_cash_advance.group_admin" string="Register Payment" type="object" attrs="{'invisible': [('state', 'not in', ['accounting_approved'])]}" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft,direct_approved,accounting_approved,paid"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" required="1" readonly="1"/>
+                                <field name="request_type" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="payment_type" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            </group>
+                            <group>
+                                <field name="date_request" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}"/>
+                                <field name="date_request_payment" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}"/>
+                                <field name="date_approve" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])], 'readonly': [('state', '!=', 'direct_approved')]}"/>
+                                <field name="employee_id" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}"/>
+                                <field name="employee_pos" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}" readonly="1" force_save="1"/>
+                                <field name="period_travelling" attrs="{'invisible': [('request_type', '!=', 'travel')]}"/>
+                                <field name="start_travel" attrs="{'invisible': [('request_type', '!=', 'travel')], 'invisible': [('request_type', '=', 'travel')], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="end_travel" attrs="{'invisible': [('request_type', '!=', 'travel')], 'invisible': [('request_type', '=', 'travel')], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="destination" attrs="{'invisible': [('request_type', '!=', 'travel')], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="purpose" attrs="{'invisible': [('request_type', '!=', 'travel')]}"/>
+                                <field name="currency_id" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}" required="1"/>
+                                <field name="company_id" attrs="{'invisible': [('request_type', 'not in', ['travel', 'other'])]}" required="1"/>
+                                <field name="reg_payment_ids" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Cash Advance Lines">
+                                <field name="line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+                                    <tree string="Cash Advance Lines" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="account_id" invisible="1"/>
+                                        <field name="analytic_distribution" widget="analytic_distribution" groups="analytic.group_analytic_accounting" options="{'product_field': 'product_id', 'account_field': 'account_id', 'force_applicability': 'optional'}"/>
+                                        <field name="amount_requested"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Payments">
+                                <field name="payment_ids" options="{'no_create': 1}" readonly="1">
+                                    <tree string="Payments">
+                                        <field name="name"/>
+                                        <field name="journal_id"/>
+                                        <field name="date"/>
+                                        <field name="amount_total"/>
+                                        <field name="state" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Settlements">
+                                <field name="settlement_ids" readonly="1" options="{'no_create': 1}">
+                                    <tree string="Settlements">
+                                        <field name="name"/>
+                                        <field name="date_claim"/>
+                                        <field name="total_expense"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Payment Settlement">
+                                <field name="settlement_payment_sett_ids" readonly="1" options="{'no_create': 1}">
+                                    <tree string="Payment Settlement">
+                                        <field name="name"/>
+                                        <field name="journal_id"/>
+                                        <field name="date"/>
+                                        <field name="amount_total"/>
+                                        <field name="state" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <group>
+                            <field name="total_requested" widget="monetary"/>
+                            <field name="total_approved" widget="monetary" groups="smt_cash_advance.group_manager,smt_cash_advance.group_admin" attrs="{'required': [('state', '=', 'direct_approved')], 'readonly': [('state', '!=', 'direct_approved')]}"/>
+                        </group>
+                    </sheet>
+                    <div class="o_attachment_preview"/>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- account.cash.advance search view -->
+        <record id="account_cash_advance_view_search" model="ir.ui.view">
+            <field name="name">account.cash.advance.view.search</field>
+            <field name="model">account.cash.advance</field>
+            <field name="arch" type="xml">
+                <search string="Cash Advance">
+                    <field name="name"/>
+                    <field name="payment_type"/>
+                    <field name="employee_id"/>
+                    <separator/>
+                    <filter string="Travel Advance" domain="[('request_type', '=', 'travel')]" name="travel_filter"/>
+                    <filter string="Other Advance" domain="[('request_type', '=', 'other')]" name="other_filter"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Travel Request action window -->
+        <record id="account_cash_advance_travel_action" model="ir.actions.act_window">
+            <field name="name">Travel Advance</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.cash.advance</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new travel request
+                </p>
+            </field>
+        </record>
+        <!-- Other Request action window -->
+        <record id="account_cash_advance_other_action" model="ir.actions.act_window">
+            <field name="name">Other Advance</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.cash.advance</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new other request
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

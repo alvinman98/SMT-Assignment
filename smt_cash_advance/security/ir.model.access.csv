@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cash_advance,access_cash_advance,model_account_cash_advance,base.group_user,1,1,1,1
+account_cash_advance_line,access_account_cash_advance_line,model_account_cash_advance_line,base.group_user,1,1,1,1
+access_cash_settlement,access_cash_settlement,model_account_cash_settlement,base.group_user,1,1,1,1
+account_cash_settlement_line,access_account_cash_settlement_line,model_account_cash_settlement_line,base.group_user,1,1,1,1
+access_cash_advance_payment_wizard,access_cash_advance_payment_wizard,model_cash_advance_payment,base.group_user,1,1,1,1
+access_cash_settlement_payment_wizard,access_cash_settlement_payment_wizard,model_cash_settlement_payment,base.group_user,1,1,1,1

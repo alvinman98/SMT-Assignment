@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- account.cash.settlement tree view -->
+        <record model='ir.ui.view' id='cash_settlement_tree_view'>
+            <field name='name'>cash_settlement.tree</field>
+            <field name='model'>account.cash.settlement</field>
+            <field name='arch' type='xml'>
+                <tree string="Cash Settlement" decoration-info="(state == 'draft')" decoration-muted="state in ['paid', 'rejected']">
+                    <field name="name"/>
+                    <field name="advance_id" string="Number Pre Approval"/>
+                    <field name="settlement_type"/>
+                    <field name="payment_type"/>
+                    <field name="date_claim"/>
+                    <field name="employee_id"/>
+                    <field name="state"/>
+                    <field name="reg_type" attrs="{'column_invisible': [('state', '!=', 'accounting_approved')]}"/>
+                </tree>
+            </field>
+        </record>
+        <!-- account.cash.settlement form view -->
+        <record model="ir.ui.view" id="cash_settlement_form_view">
+            <field name="name">cash_settlement.form</field>
+            <field name="model">account.cash.settlement</field>
+            <field name="arch" type="xml">
+                <form string="Cash Settlement">
+                    <header>
+                        <button name="action_confirm_settlement" groups="smt_cash_advance.group_user, smt_cash_advance.group_admin" string="Confirm" type="object" attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                        <button name="action_approve_settlement" groups="smt_cash_advance.group_manager, smt_cash_advance.group_admin" string="Approve" type="object" attrs="{'invisible': [('state', '!=', 'direct_approved')]}" class="oe_highlight"/>
+                        <button name="action_set_to_draft" groups="smt_cash_advance.group_manager, smt_cash_advance.group_admin" string="Review" type="object" attrs="{'invisible': [('state', '!=', 'direct_approved')]}"/>
+                        <button name="action_reject_settlement" groups="smt_cash_advance.group_manager, smt_cash_advance.group_admin" string="Reject" type="object" attrs="{'invisible': [('state', '!=', 'direct_approved')]}"/>
+                        <button name="action_pay_settlement" groups="smt_cash_advance.group_finance, smt_cash_advance.group_admin" string="Register Payment" type="object" attrs="{'invisible': ['|', ('state', '!=', 'accounting_approved'), ('reg_type', '!=', '0')]}" class="oe_highlight"/>
+                        <button name="action_pay_settlement" groups="smt_cash_advance.group_finance,smt_cash_advance.group_admin" string="Return Advance" type ="object" attrs="{'invisible': ['|', ('state', '!=', 'accounting_approved'), ('reg_type', '!=', '1')]}" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft, direct_approved, accounting_approved, paid"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" readonly="1"/>
+                                <field name="settlement_type" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="employee_id" required="1"/>
+                                <field name="advance_id" domain="[('state', 'not in', ['draft', 'rejected']), ('create_uid', '=',uid), ('request_type','=', settlement_type), ('settlement_ids', '=', False)]" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="payment_type" required="1" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="date_claim" attrs="{'readonly': [('state','!=', 'draft')]}" required="1"/>
+                                <field name="currency_id" required="1"/>
+                                <field name="company_id" readonly="1"/>
+                                <field name="move_id" attrs="{'invisible': [('move_id', '=', False)]}" readonly="1"/>
+                                <field name="reg_type" required="1"/>
+                                <field name="reg_payment_ids" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Cash Settlement Lines">
+                                <field name="line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+                                    <tree string="Cash Advance lines" editable="bottom">
+                                        <field name="product_id" domain="[('can_be_expensed', '=', True)]" attrs="{'column_invisible': [('parent.settlement_type', '!=', 'travel')], 'required': [('parent.settlement_type', '=', 'travel')]}"/>
+                                        <field name="product_id2" domain="[('can_be_expensed2', '=', True)]" attrs="{'column_invisible': [('parent.settlement_type','!=', 'other')], 'required': [('parent.settlement_type', '=', 'other')]}"/>
+                                        <field name="name" required="1"/>
+                                        <field name="account_id" required="1"/>
+                                        <field name="analytic_distribution" widget="analytic_distribution" groups="analytic.group_analytic_accounting" options="{'product_field': 'product_id', 'account_field': 'account_id', 'force_applicability': 'optional'}"/>
+                                        <field name="amount_expense" required="1"/>
+                                        <button name="detail_product" string="Detail Product" type="object" icon="fa-list" options="{&quot;warn&quot;: true}" attrs="{'column_invisible': [('parent.state', '=', 'paid')]}"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Payment Settlement">
+                                <field name="settlement_payment_ids" options="{'no_create': 1}" readonly="1">
+                                    <tree string="Payments">
+                                        <field name="name"/>
+                                        <field name="journal_id"/>
+                                        <field name="date"/>
+                                        <field name="amount_total"/>
+                                        <field name="state" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <group class="oe_subtotal_footer oe_right">
+                            <field name="total_expense" colspan="2"/>
+                            <field name="total_cash_advance" colspan="2" widget="monetary"/>
+                            <field name="total_approve" colspan="2" attrs="{'invisible': [('payment_type', '!=', 'self_pay')]}"/>
+                            <field name="total_pay" colspan="2"/>
+                        </group>
+                    </sheet>
+                    <div class="o_attachment_preview"/>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <!-- account.cash.settlement search view -->
+        <record id="view_cash_settlement_search" model="ir.ui.view">
+            <field name="name">cash_settlement.search</field>
+            <field name="model">account.cash.settlement</field>
+            <field name="arch" type="xml">
+                <search string="Cash Settlement">
+                    <field name="name"/>
+                    <field name="settlement_type"/>
+                    <field name="employee_id"/>
+                    <separator/>
+                    <filter string="Travel Settlement" domain="[('settlement_type', '=', 'travel')]" name="travel_filter"/>
+                    <filter string="Other Settlement" domain="[('settlement_type', '=', 'other')]" name="other_filter"/>
+                </search>
+            </field>
+        </record>
+        <!-- Travel Settlement action window -->
+        <record id="cash_settlement_travel_list_action" model="ir.actions.act_window">
+            <field name="name">Travel Settlement</field>
+            <field name="res_model">account.cash.settlement</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'default_settlement_type': 'travel', 'search_default_travel_filter': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">  
+                    Create a new travel settlement
+                </p>
+            </field>
+        </record>
+
+        <!-- Other Settlement action window -->
+        <record id="cash_settlement_other_list_action" model="ir.actions.act_window">
+            <field name="name">Other Settlement</field>
+            <field name="res_model">account.cash.settlement</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'default_settlement_type': 'other', 'search_default_other_filter': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">  
+                    Create a new other settlement
+                </p>
+            </field>
+        </record>
+
+        <!-- account.cash.settlement.line form view -->
+        <record model="ir.ui.view" id="view_detail_product_form">
+            <field name="name">detail_product.form</field>
+            <field name="model">account.cash.settlement.line</field>
+            <field name="arch" type="xml">
+                <form string="Cash Settlement Lines" create="false">
+                    <sheet>
+                        <group>
+                            <field name="settlement_id" invisible="1"/>
+                            <field name="product_id" invisible="1"/>
+                            <field name="product_id2" invisible="1"/>
+                            <field name="name" readonly="1" string="Product"/>
+                            <field name="account_id" invisible="1"/>
+                            <field name="analytic_distribution" invisible="1"/>
+                            <field name="amount_expense" invisible="1"/>
+                            <field name="date_trans"/>
+                            <field name="currency" required="1"/>
+                            <field name="value" required="1"/>
+                            <field name="cash_out" required="1"/>
+                            <field name="rate" required="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

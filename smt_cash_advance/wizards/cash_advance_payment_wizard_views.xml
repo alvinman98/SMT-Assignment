@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="cash_advance_payment_form_view">
+            <field name="name">cash_advance_payment.form</field>
+            <field name="model">cash.advance.payment</field>
+            <field name="arch" type="xml">
+                <form string="Cash Advance Payment">
+                    <header>
+                        <button string='Validate' name="action_validate_advance_payment" groups="smt_cash_advance.group_finance,smt_cash_advance.group_admin" type="object" class="btn-primary"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="advance_id" invisible="1"/>
+                                <label for="amount_paid"/>
+                                <div class="oe_inline">
+                                    <field name="amount_paid" style="width:60%" force_save="1"/>
+                                    <field name="currency" style="width: 40%" readonly="1"/>
+                                </div>
+                                <field name="journal_id"/>
+                                <field name="method_type" widget="radio"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="memo"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

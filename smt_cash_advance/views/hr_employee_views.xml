@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_employee_form">
+            <field name="name">hr.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <page name="hr_settings" position="inside">
+                    <group>
+                        <field name="advance_account_id"/>
+                        <field name="advance_payable_account_id"/>
+                        <field name="advance_receivable_account_id"/>
+                    </group>
+                </page>
+            </field>
+        </record>
+    </data>
+</odoo>

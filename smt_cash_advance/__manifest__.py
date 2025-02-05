@@ -1,0 +1,23 @@
+{
+    'name': 'Cash Advance & Settlement',
+    'version': '1.0',
+    'author': 'AlvinS',
+    'category': 'Accounting',
+    'summary': 'Manage Cash Advance and Settlement',
+    'depends': ['account', 'hr'],
+    'data': [
+        'security/cash_advance_security.xml',
+        'security/ir.model.access.csv',
+        'data/cash_advance_data.xml',
+        'views/cash_advance_views.xml',
+        'views/cash_settlement_views.xml',
+        'views/menus.xml',
+        'views/hr_employee_views.xml',
+        'views/product_views.xml',
+        'wizards/cash_advance_payment_wizard_views.xml',
+        'wizards/cash_settlement_payment_wizard_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+    'auto_install': False,
+}
